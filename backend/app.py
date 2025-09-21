@@ -7,7 +7,7 @@ import os
 
 app = FastAPI()
 
-API_KEY = "PHM5KPDUKNLS6DH4"
+API_KEY = "08SGVBYBX04UFJ7H"
 LISTING_URL = f"https://www.alphavantage.co/query?function=LISTING_STATUS&apikey={API_KEY}"
 BASE_URL = "https://www.alphavantage.co/query"
 origins = [

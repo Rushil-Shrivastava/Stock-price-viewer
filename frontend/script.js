@@ -19,42 +19,47 @@ async function fetchAndDisplayPrice(symbol) {
     if (!symbol) return;
 
     try {
-        const response = await fetch(`http://localhost:8000/intraday?symbol=${symbol}`);
-        const data = response.json();
+        const response = await fetch(`http://localhost:8000/intraday/${symbol}`);
+        const datajson = await response.json(); 
 
-        const chartLabel = data.map(point => (
-            [point.time]
+        console.log(datajson);
+
+        const chartLabel = datajson.map(point => (
+            point.time
         ));
 
-        const chartData = data.map(point => (
-            [point.close]
+        const chartData = datajson.map(point => (
+            point.close
         ));
+
+        const data = {
+            labels: chartLabel,
+            datasets: [{
+                label: symbol,
+                data: chartData,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        };
 
         if (priceChart) {
             priceChart.destroy();
         }
-        console.log("Chart data:", chartData);
+
         priceChart = new Chart(chartCtx, {
             type: "line",
-            data: {
-                datasets: [{
-                    labels: chartLabel,
-                    data: chartData,
-                    borderColor: "rgba(0, 123, 255, 0.7)",
-                    backgroundColor: "rgba(0, 123, 255, 0.3)",
-                    fill: true,
-                    tension: 0.2,
-                    pointRadius: 2 
-                }]
-            },
+            data: data,
             options: {
-                parsing: false,
                 scales: {
                     x: {
                         type: 'time',
                         time: {
-                            tooltipFormat: "yyyy-MM-dd HH:mm",
-                            unit: 'minute'
+                            unit: 'minute',
+                            displayFormats: {
+                                minute: 'HH:mm'
+                            },
+                            tooltipFormat: 'yyyy-LL-dd HH:mm'
                         },
                         title: { display: true, text: 'Time' }
                     },
