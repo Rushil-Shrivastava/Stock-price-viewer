@@ -18,58 +18,75 @@ async function fetchSymbols() {
 async function fetchAndDisplayPrice(symbol) {
     if (!symbol) return;
 
+    ////////// CHECK IF THE TAG ALREADY EXISTS
+    const exists = priceChart && priceChart.data.datasets.some(ds => ds.label === symbol);
+    if (exists) {
+        console.log(`Symbol ${symbol} already on chart, skipping.`);
+        return;
+    }
+
     try {
         const response = await fetch(`http://localhost:8000/intraday/${symbol}`);
         const datajson = await response.json(); 
 
-        console.log(datajson);
+        ////////// PREPARE THE CHART DATA
+        const chartLabel = datajson.map(point => (point.time));
+        const chartData = datajson.map(point => (point.close));
+        const color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`;
 
-        const chartLabel = datajson.map(point => (
-            point.time
-        ));
 
-        const chartData = datajson.map(point => (
-            point.close
-        ));
+        ////////// APPEND THE INNER HTML WITH PERCENTAGE CHANGE
+        const lastPrice = chartData[chartData.length - 1];
+        const firstPrice = chartData[0];
+        const changePct = (((lastPrice - firstPrice) / firstPrice) * 100).toFixed(2);
+        
+        const infoDiv = document.getElementById("stock-info");
+        const stockLine = document.createElement("h5");
+        stockLine.innerHTML = `${symbol}: $${lastPrice.toFixed(2)} (${changePct}%)`;
+        document.getElementById("label-percentage").innerHTML = "Percentage change in stocks"
 
-        const data = {
-            labels: chartLabel,
-            datasets: [{
-                label: symbol,
-                data: chartData,
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            }]
-        };
+        infoDiv.appendChild(stockLine);
 
-        if (priceChart) {
-            priceChart.destroy();
-        }
-
-        priceChart = new Chart(chartCtx, {
-            type: "line",
-            data: data,
-            options: {
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: 'minute',
-                            displayFormats: {
-                                minute: 'HH:mm'
+        ////////// CREATE THE CHART
+        if (!priceChart) {
+            priceChart = new Chart(chartCtx, {
+                type: "line",
+                data: {
+                    labels: chartLabel,
+                    datasets: []
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute',
+                                displayFormats: { minute: 'HH:mm' },
+                                tooltipFormat: 'yyyy-LL-dd HH:mm'
                             },
-                            tooltipFormat: 'yyyy-LL-dd HH:mm'
+                            title: { display: true, text: 'Time' }
                         },
-                        title: { display: true, text: 'Time' }
-                    },
-                    y: {
-                        beginAtZero: false,
-                        title: { display: true, text: 'Price (USD)' }
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: 'Price (USD)' }
+                        }
                     }
                 }
-            }
+            });
+        }
+
+        ////////// PUSH THE NEW DATA INTO THE PRICE CHART
+        priceChart.data.datasets.push({
+            label: symbol,
+            data: chartData,
+            borderColor: color,
+            backgroundColor: color,
+            fill: false,
+            tension: 0.1
         });
+
+        priceChart.update();
+
     } catch (error) {
         console.error("Failed to load intraday stock price ", error);
     }
