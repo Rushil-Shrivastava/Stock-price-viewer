@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Stock Price Viewer</title>
+        <link rel="icon" href="favicon.ico" />
+        <link href="styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <header>
+            <h1>View Stock Prices</h1>
+            <search>
+                <form id="stock-form">
+                    <label for="stock-select">Select a Stock</label>
+                    <input id="stock-select" name="stock" list="suggestions">
+                    <datalist id="suggestions">
+                        <!-- Options will be added -->
+                    </datalist>
+                    <button type="submit">Search</button>
+                </form>
+            </search>
+        </header>
+
+        <canvas id="price-chart" width="80%" height="40%"></canvas>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
+        <script src="script.js"></script>
+    </body>
+</html>
